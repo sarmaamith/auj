@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E2A5A">
+<title>Acme Fashions – Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --desk:#DDE1EE; --bg:#F6F7FB; --card:#FFFFFF; --ink:#1A2144; --muted:#5D6485; --line:#DCE0EC;
+    --indigo:#1E2A5A; --indigo-ink:#FFFFFF; --marigold:#F2A900; --marigold-ink:#1A2144;
+    --soft:#EEF0F8; --ok:#1E8E5A; --danger:#B3263E;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --desk:#070A16; --bg:#10142A; --card:#181D38; --ink:#ECEEF8; --muted:#A6ACC8; --line:#2B3156;
+      --indigo:#8C9BFF; --indigo-ink:#0E1226; --marigold:#FFC23D; --marigold-ink:#10142A;
+      --soft:#202648; --ok:#46D19A; --danger:#FF7D8E;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --desk:#070A16; --bg:#10142A; --card:#181D38; --ink:#ECEEF8; --muted:#A6ACC8; --line:#2B3156;
+    --indigo:#8C9BFF; --indigo-ink:#0E1226; --marigold:#FFC23D; --marigold-ink:#10142A;
+    --soft:#202648; --ok:#46D19A; --danger:#FF7D8E;
+    color-scheme:dark;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--desk);color:var(--ink);font:16px/1.5 "Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex;justify-content:center;align-items:center}
+  [hidden]{display:none !important}
+  button,input{font:inherit;color:inherit}
+  :focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
+
+  /* Phone shell: full screen on phones, a framed device on larger screens */
+  .app{position:relative;width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+  @media (min-width:520px) and (min-height:700px){
+    .app{width:400px;height:min(860px,calc(100% - 48px));border-radius:42px;
+      box-shadow:0 0 0 10px #10142A,0 0 0 11px #3A4170,0 30px 60px rgba(14,18,40,.35)}
+  }
+
+  /* Header with block-print band */
+  .appbar{flex:none;background:var(--indigo);color:var(--indigo-ink);padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 0;position:relative}
+  .appbar-row{display:flex;align-items:center;gap:10px;min-height:40px;padding-bottom:12px}
+  .icon-btn{width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer;flex:none}
+  .icon-btn:hover{background:rgba(255,255,255,.12)}
+  .wordmark{font-family:Gloock,Georgia,serif;font-size:1.55rem;letter-spacing:.01em;line-height:1}
+  .appbar-title{font-weight:700;font-size:1.05rem}
+  .appbar .spacer{flex:1}
+  .print{display:block;width:calc(100% + 32px);margin:0 -16px;height:18px;color:var(--marigold)}
+
+  /* Screens */
+  .screens{flex:1;position:relative;overflow:hidden}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column}
+  .screen.active{display:flex;animation:slide .26s ease-out}
+  .screen.back.active{animation:slideback .26s ease-out}
+  @keyframes slide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes slideback{from{transform:translateX(-24px);opacity:0}to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.screen.active,.screen.back.active{animation:none}}
+  .scroll{flex:1;overflow-y:auto;padding:24px 20px 20px;-webkit-overflow-scrolling:touch}
+  .dock{flex:none;padding:12px 20px calc(env(safe-area-inset-bottom,0px) + 16px);background:var(--bg);border-top:1px solid var(--line);display:grid;gap:10px}
+
+  h1,h2{margin:0 0 8px;line-height:1.15;font-weight:800;letter-spacing:-.01em}
+  h1{font-size:1.7rem}
+  h2{font-size:1.35rem}
+  h3{font-size:1rem;margin:18px 0 6px}
+  p{margin:0 0 12px}
+  .lead{color:var(--muted);margin-bottom:22px}
+  .center{text-align:center}
+
+  /* Fields */
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+  .input{width:100%;font-size:1.05rem;padding:14px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--card)}
+  .input:focus{border-color:var(--indigo);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--indigo) 22%,transparent)}
+  .field.invalid .input{border-color:var(--danger)}
+  .prefix{display:flex;align-items:stretch;border:1.5px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+  .prefix span{display:grid;place-items:center;padding:0 12px 0 14px;font-weight:700;border-right:1.5px solid var(--line);color:var(--muted)}
+  .prefix .input{border:0;border-radius:0}
+  .prefix:focus-within{border-color:var(--indigo);box-shadow:0 0 0 3px color-mix(in srgb,var(--indigo) 22%,transparent)}
+  .field.invalid .prefix{border-color:var(--danger)}
+  .otp{letter-spacing:.6em;font-weight:800;font-size:1.4rem;text-align:center}
+  .err{color:var(--danger);font-size:.85rem;margin-top:6px}
+  .err:empty{display:none}
+  .hint{font-size:.85rem;color:var(--muted);margin-top:6px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .readonly{display:flex;align-items:center;justify-content:space-between;background:var(--soft);border-radius:14px;padding:12px 14px;margin-bottom:18px}
+  .readonly b{font-size:1.05rem}
+  .link{background:none;border:0;padding:0;color:var(--indigo);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .resend{display:flex;justify-content:flex-end;font-size:.9rem;color:var(--muted)}
+
+  /* Buttons */
+  .btn{width:100%;border-radius:999px;padding:15px 20px;font-weight:800;font-size:1rem;border:1.5px solid transparent;cursor:pointer}
+  .btn-primary{background:var(--indigo);color:var(--indigo-ink)}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-ghost{background:var(--card);color:var(--indigo);border-color:var(--line)}
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn-row .btn{padding:14px 10px;font-size:.92rem}
+
+  /* Checks and radios */
+  .checks{list-style:none;padding:0;margin:16px 0;display:grid;gap:4px}
+  .check{display:flex;align-items:center;gap:12px;padding:10px 4px;cursor:pointer;position:relative;font-size:1.02rem}
+  .check input{position:absolute;opacity:0;width:1px;height:1px}
+  .box{width:26px;height:26px;border-radius:50%;border:2px solid var(--muted);display:grid;place-items:center;flex:none;color:#fff;transition:background .15s,border-color .15s}
+  .box svg{opacity:0}
+  .check input:checked + .box{background:var(--ok);border-color:var(--ok)}
+  .check input:checked + .box svg{opacity:1}
+  .check input:focus-visible + .box{outline:3px solid var(--marigold);outline-offset:2px}
+  .square .box{border-radius:7px;width:22px;height:22px}
+  .square input:checked + .box{background:var(--indigo);border-color:var(--indigo)}
+  .grid2{grid-template-columns:1fr 1fr;column-gap:12px}
+  .static .box{background:var(--ok);border-color:var(--ok)}
+  .static .box svg{opacity:1}
+  .radio-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;font-weight:700;margin:6px 0}
+  .radio-row .check{font-weight:600;padding:6px 2px}
+  .radio-row input:checked + .box{background:var(--card);border-color:var(--ink);box-shadow:inset 0 0 0 4px var(--card),inset 0 0 0 13px var(--ink)}
+  .radio-row input:checked + .box svg{opacity:0}
+
+  .notice{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:8px 0 14px}
+  .notice h3{margin-top:0}
+  .notice ul{margin:0;padding-left:20px;color:var(--muted)}
+  .fine{font-size:.82rem;color:var(--muted)}
+  .fine a,.foot a{color:var(--indigo);font-weight:700}
+  .foot{font-size:.8rem;color:var(--muted);text-align:center;font-style:italic;margin-top:18px}
+
+  /* Login hero */
+  .hero{display:grid;justify-items:center;text-align:center;padding:12px 0 26px}
+  .hero .stamp{width:92px;height:92px;margin-bottom:14px}
+  .hero .wordmark{color:var(--indigo);font-size:2.4rem}
+  .hero p{color:var(--muted);margin:6px 0 0}
+
+  /* Art */
+  .art{display:block;margin:4px auto 10px}
+  .logos{display:grid;grid-template-columns:repeat(6,40px);justify-content:center;margin:4px auto 18px}
+  .logos span{grid-column:span 2;width:80px;height:80px}
+  .logos span:nth-child(4){grid-column:2 / span 2;margin-top:-10px}
+  .logos span:nth-child(5){grid-column:4 / span 2;margin-top:-10px}
+  .logos svg{width:100%;height:100%}
+  .tiles{display:flex;gap:10px;overflow-x:auto;margin:0 -20px 18px;padding:0 20px 4px;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .tiles::-webkit-scrollbar{display:none}
+  .tile{flex:0 0 138px;scroll-snap-align:start;border-radius:18px;padding:12px;color:#fff;min-height:168px;display:flex;flex-direction:column;justify-content:space-between}
+  .tile b{font-size:.95rem}
+  .tile small{display:block;font-size:.76rem;opacity:.92;line-height:1.35;margin-top:4px}
+  .tile svg{align-self:flex-end}
+  .t1{background:linear-gradient(160deg,#B7791F,#6B3E0A)} .t2{background:linear-gradient(160deg,#1D9A85,#0B5247)}
+  .t3{background:linear-gradient(160deg,#2F4F8F,#101C3D)} .t4{background:linear-gradient(160deg,#B4233A,#5E0D1B)}
+
+  /* Done */
+  .done-mark{width:72px;height:72px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;margin:8px auto 14px}
+  .done-mark.fail{background:var(--danger)}
+  .ref{display:inline-block;background:var(--soft);border-radius:12px;padding:8px 14px;font-weight:800;letter-spacing:.04em;margin:4px 0 14px}
+  .summary{width:100%;border-collapse:collapse;font-size:.92rem;text-align:left;margin-top:6px}
+  .summary th,.summary td{padding:9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  .summary th{font-weight:700;padding-right:10px;width:38%}
+  .pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:.76rem;font-weight:800;margin:2px 4px 2px 0}
+  .pill.granted{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+  .pill.declined{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+  .demo-note{font-size:.85rem;color:var(--muted);margin-top:14px;text-align:left}
+  details{text-align:left;margin-top:8px}
+  details pre{background:var(--soft);border-radius:12px;padding:12px;overflow-x:auto;font-size:.72rem;max-height:260px}
+  .spinner{width:40px;height:40px;border-radius:50%;border:4px solid var(--soft);border-top-color:var(--indigo);animation:spin 1s linear infinite;margin:40px auto 16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Tab bar */
+  select.input{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:42px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='M3 5l4 4 4-4' fill='none' stroke='%235D6485' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 16px center}
+  .pc-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:18px}
+  .pc-card .btn{margin-top:4px}
+  .notice-ok{background:color-mix(in srgb,var(--ok) 12%,var(--card));border-radius:14px;padding:12px 14px;margin-top:14px}
+  .prefs-btn{display:flex;align-items:center;gap:6px;border:1.5px solid rgba(255,255,255,.55);background:transparent;color:inherit;border-radius:999px;padding:7px 12px;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap}
+  .prefs-btn:hover{background:rgba(255,255,255,.12)}
+  .appbar-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .prefs-btn .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .prefs-btn{padding:9px}
+  .wordmark{white-space:nowrap}
+
+  /* ===== Future Consent Portal (self-contained) ===== */
+  #consentPortal{--pv-bar:#1E2A5A;--pv-brand:var(--indigo);--pv-brand-ink:var(--indigo-ink);--pv-soft:var(--soft);--pv-bg:var(--bg);--pv-card:var(--card);--pv-line:var(--line);--pv-ink:var(--ink);--pv-muted:var(--muted);--pv-ok:var(--ok);--pv-danger:var(--danger);--pv-accent:var(--marigold);container-type:inline-size;position:relative;background:var(--pv-bg);color:var(--pv-ink);padding:0 clamp(14px,3vw,40px) 48px}
+  #consentPortal *,#consentPortal *::before,#consentPortal *::after{box-sizing:border-box}
+  #consentPortal button{font:inherit}
+  #consentPortal .pv-band{position:absolute;inset:0 0 auto;height:250px;background:
+    radial-gradient(circle at 12% 30%,rgba(255,255,255,.07) 0 2px,transparent 3px) 0 0/24px 24px,
+    linear-gradient(180deg,var(--pv-bar),color-mix(in srgb,var(--pv-bar) 80%,#000))}
+  #consentPortal .pv-wrap{position:relative;max-width:1320px;margin:0 auto;padding-top:24px}
+  #consentPortal .pv-head{display:flex;align-items:flex-start;gap:14px;color:#fff;margin-bottom:22px}
+  #consentPortal .pv-back{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:12px;width:42px;height:42px;display:grid;place-items:center;cursor:pointer;flex:none;margin-top:4px}
+  #consentPortal .pv-kicker{font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.8;margin-bottom:2px}
+  #consentPortal .pv-head h1{margin:0;color:#fff;font-size:clamp(1.5rem,3vw,2.2rem);line-height:1.15}
+  #consentPortal .pv-head p{margin:4px 0 0;opacity:.9;max-width:62ch}
+  #consentPortal .pv-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(250px,.72fr);gap:20px;align-items:start}
+  #consentPortal .pv-col{display:grid;gap:20px}
+  #consentPortal .pv-side{display:grid;gap:16px}
+  @container (max-width:1060px){#consentPortal .pv-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#consentPortal .pv-side{grid-column:1 / -1;grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @container (max-width:720px){#consentPortal .pv-grid{grid-template-columns:1fr}#consentPortal .pv-side{grid-template-columns:1fr}}
+  #consentPortal .pv-sec{background:var(--pv-card);border:1px solid var(--pv-line);border-radius:20px;padding:22px clamp(14px,2.4vw,26px);box-shadow:0 6px 20px rgba(14,30,60,.06)}
+  #consentPortal .pv-sec > header{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
+  #consentPortal .pv-sec h2{font-size:1.15rem;margin:0;line-height:1.3}
+  #consentPortal .pv-sec header p{margin:4px 0 0;color:var(--pv-muted);font-size:.9rem}
+  #consentPortal .pv-ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--pv-soft);color:var(--pv-brand);flex:none}
+  #consentPortal .pv-list{list-style:none;margin:0;padding:0}
+  #consentPortal .pv-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--pv-line)}
+  #consentPortal .pv-row:first-child{border-top:0}
+  #consentPortal .pv-what{flex:1;min-width:0}
+  #consentPortal .pv-what b{display:block;font-weight:700}
+  #consentPortal .pv-what small{display:block;color:var(--pv-muted);font-size:.85rem}
+  #consentPortal .pv-ri{color:var(--pv-brand);flex:none}
+  #consentPortal .pv-switch{position:relative;width:48px;height:28px;border-radius:999px;border:0;background:var(--pv-line);cursor:pointer;flex:none;transition:background .2s}
+  #consentPortal .pv-switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+  #consentPortal .pv-switch[aria-checked="true"]{background:var(--pv-brand)}
+  #consentPortal .pv-switch[aria-checked="true"]::after{transform:translateX(20px)}
+  #consentPortal :focus-visible{outline:3px solid var(--pv-accent);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){#consentPortal .pv-switch,#consentPortal .pv-switch::after{transition:none}}
+  #consentPortal .pv-who{display:flex;align-items:center;gap:14px;padding-bottom:14px;margin-bottom:12px;border-bottom:1px solid var(--pv-line)}
+  #consentPortal .pv-ini{width:56px;height:56px;border-radius:16px;background:var(--pv-brand);color:var(--pv-brand-ink);display:grid;place-items:center;font-weight:800;font-size:1.3rem;flex:none}
+  #consentPortal .pv-who b{font-size:1.2rem}
+  #consentPortal .pv-who small{display:block;color:var(--pv-muted)}
+  #consentPortal .pv-details{display:grid;gap:10px}
+  #consentPortal .pv-dbox{display:flex;justify-content:space-between;gap:12px;border:1px dashed var(--pv-line);border-radius:12px;padding:10px 14px}
+  #consentPortal .pv-dbox small{color:var(--pv-muted);font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;align-self:center}
+  #consentPortal .pv-dbox span{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+  #consentPortal .pv-actions{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px}
+  #consentPortal .pv-link{background:none;border:0;padding:0;color:var(--pv-brand);font-weight:800;font-size:.9rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  #consentPortal .pv-status{font-size:.82rem;font-weight:700;color:var(--pv-muted)}
+  #consentPortal .pv-status.on{color:var(--pv-ok)}
+  #consentPortal .pv-new{font-size:.68rem;font-weight:800;background:var(--pv-accent);color:#2A1E00;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+  #consentPortal .pv-mini{flex:none;min-width:84px;border-radius:999px;padding:8px 16px;font-weight:800;font-size:.88rem;cursor:pointer;border:1.5px solid var(--pv-brand);background:var(--pv-brand);color:var(--pv-brand-ink)}
+  #consentPortal .pv-mini[data-linked="true"]{background:transparent;border-color:var(--pv-line);color:var(--pv-muted)}
+  #consentPortal .pv-mini[data-linked="true"]:hover{border-color:var(--pv-danger);color:var(--pv-danger)}
+  #consentPortal .pv-hcard{border-radius:20px;padding:22px;background:linear-gradient(160deg,var(--pv-soft),color-mix(in srgb,var(--pv-brand) 20%,var(--pv-card)));color:var(--pv-ink);border:1px solid var(--pv-line)}
+  #consentPortal .pv-hcard.lead{background:linear-gradient(150deg,var(--pv-brand),color-mix(in srgb,var(--pv-brand) 62%,#000));color:var(--pv-brand-ink);border:0}
+  #consentPortal .pv-hcard svg{display:block;margin-bottom:12px}
+  #consentPortal .pv-hcard p{margin:0 0 4px}
+  #consentPortal .pv-hcard h3{font-size:1.3rem;line-height:1.25;margin:2px 0 8px}
+  #consentPortal .pv-tag{font-weight:800;opacity:.85;margin-bottom:16px}
+  #consentPortal .pv-hbtn{display:block;width:100%;border-radius:12px;padding:12px;font-weight:800;text-align:center;cursor:pointer;border:0;background:var(--pv-brand);color:var(--pv-brand-ink)}
+  #consentPortal .pv-hcard.lead .pv-hbtn{background:transparent;color:inherit;border:1.5px solid currentColor}
+  #consentPortal .pv-save{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--pv-card);border:1px solid var(--pv-line);border-radius:16px;padding:14px 18px;margin-top:22px}
+  #consentPortal .pv-save span{margin-right:auto;color:var(--pv-muted);font-size:.92rem}
+  #consentPortal .pv-btn{border-radius:999px;padding:12px 22px;font-weight:800;cursor:pointer;white-space:nowrap;border:1.5px solid var(--pv-brand);background:var(--pv-brand);color:var(--pv-brand-ink)}
+  #consentPortal .pv-btn.ghost{background:var(--pv-card);color:var(--pv-brand);border-color:var(--pv-line)}
+  @container (max-width:520px){#consentPortal .pv-save span{flex-basis:100%}#consentPortal .pv-btn{flex:1}}
+  #s-portal .scroll{padding:0}
+  #s-portal #consentPortal{padding:0 16px 28px;min-height:100%}
+  #s-portal #consentPortal .pv-back{display:none}
+  #s-portal #consentPortal .pv-wrap{padding-top:18px}
+  #s-portal #consentPortal .pv-band{height:200px}
+  .dock .link-row{display:flex;justify-content:center}
+  .tabbar{flex:none;display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(env(safe-area-inset-bottom,0px) + 6px)}
+  .tab{display:grid;justify-items:center;gap:2px;font-size:.7rem;font-weight:700;color:var(--muted);padding:6px 0;background:none;border:0;cursor:default}
+  .tab.on{color:var(--indigo)}
+  .has-tabs .dock{padding-bottom:14px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <header class="appbar">
+    <div class="appbar-row">
+      <button class="icon-btn" id="backBtn" type="button" aria-label="Back" hidden>
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M14 4 7 11l7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="wordmark" id="barBrand">Acme Fashions</span>
+      <span class="appbar-title" id="barTitle" hidden></span>
+      <span class="spacer"></span>
+      <button class="prefs-btn" id="portalBtn" type="button" title="Future Consent Portal"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 3 5v5c0 4 3 7 7 8 4-1 7-4 7-8V5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m7 10 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl">Future Consent Portal</span></button>
+      <button class="prefs-btn" id="managePrefsBtn" type="button" title="Manage preferences">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 12h2M7 12h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10.5" cy="4" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="12" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span class="lbl">Manage preferences</span>
+      </button>
+    </div>
+    <!-- Block-print band -->
+    <svg class="print" viewBox="0 0 400 18" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <pattern id="bp" width="24" height="18" patternUnits="userSpaceOnUse">
+          <path d="M12 2 C15 6 15 6 12 9 C9 6 9 6 12 2Z M12 9 C15 12 15 12 12 16 C9 12 9 12 12 9Z" fill="currentColor"/>
+          <circle cx="2" cy="9" r="2" fill="currentColor"/><circle cx="22" cy="9" r="2" fill="currentColor"/>
+        </pattern>
+      </defs>
+      <rect width="400" height="18" fill="url(#bp)"/>
+    </svg>
+  </header>
+
+  <main class="screens" aria-live="polite">
+
+    <!-- 1. Mobile number -->
+    <section class="screen active" id="s-login">
+      <div class="scroll">
+        <div class="hero">
+          <svg class="stamp" viewBox="0 0 92 92" aria-hidden="true">
+            <circle cx="46" cy="46" r="44" fill="#1E2A5A"/>
+            <g fill="#F2A900">
+              <path d="M46 14c7 9 7 9 0 18-7-9-7-9 0-18zM46 60c7 9 7 9 0 18-7-9-7-9 0-18zM14 46c9-7 9-7 18 0-9 7-9 7-18 0zM60 46c9-7 9-7 18 0-9 7-9 7-18 0z"/>
+              <circle cx="46" cy="46" r="8"/>
+            </g>
+            <circle cx="46" cy="46" r="40" fill="none" stroke="#F2A900" stroke-width="1.5" stroke-dasharray="2 5"/>
+          </svg>
+          <span class="wordmark">Acme Fashions</span>
+          <p>Handpicked fashion, delivered across India</p>
+        </div>
+        <h1>Welcome</h1>
+        <p class="lead">Sign in or create an account with your mobile number.</p>
+        <div class="field">
+          <label for="mobile">Mobile number</label>
+          <div class="prefix"><span>+91</span><input class="input" id="mobile" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="10-digit number"></div>
+          <div class="err"></div>
+        </div>
+        <p class="fine">By continuing, I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a>.</p>
+      </div>
+      <div class="dock">
+        <button class="btn btn-primary" id="continueBtn" type="button">Continue</button>
+        <button class="btn btn-ghost" id="managePrefsBtn2" type="button">Manage preferences</button>
+        <div class="link-row"><button class="link" id="portalLink" type="button">Future Consent Portal</button></div>
+      </div>
+    </section>
+
+    <!-- 2. OTP -->
+    <section class="screen" id="s-otp" data-title="Sign in" data-back="s-login">
+      <div class="scroll">
+        <h1>Sign in with OTP</h1>
+        <p class="lead">Enter the 6-digit code sent to <b id="otpTo"></b>.</p>
+        <div class="field">
+          <label for="otp">OTP</label>
+          <input class="input otp" id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+          <div class="hint">This is a demo, so any 6 digits will work.</div>
+          <div class="err"></div>
+        </div>
+        <div class="resend"><span id="resendWait">Resend OTP in <b id="resendSecs">59</b>s</span><button class="link" id="resendBtn" type="button" hidden>Resend OTP</button></div>
+      </div>
+      <div class="dock"><button class="btn btn-primary" id="otpBtn" type="button">Start shopping</button></div>
+    </section>
+
+    <!-- 3. Account details + privacy notice -->
+    <section class="screen" id="s-account" data-title="Set up your account" data-back="s-otp">
+      <div class="scroll">
+        <h2>Please set up your account</h2>
+        <div class="readonly"><span><b id="acctMobile"></b><br><span class="fine">Your verified mobile number</span></span><button class="link" id="editMobile" type="button">Edit</button></div>
+        <div class="row2">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input class="input" id="firstName" type="text" autocomplete="given-name" maxlength="50">
+            <div class="err"></div>
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input class="input" id="lastName" type="text" autocomplete="family-name" maxlength="50">
+            <div class="err"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" id="email" type="email" autocomplete="email" placeholder="name@example.com">
+          <div class="err"></div>
+        </div>
+
+        <div class="notice">
+          <h3>What information we collect and why</h3>
+          <ul><li>To create your account, process orders and deliver products, we collect your identification, contact, delivery and transaction details. This helps us fulfil your purchases and provide customer support.</li></ul>
+        </div>
+        <div class="radio-row" role="radiogroup" aria-labelledby="ageLabel">
+          <span id="ageLabel">I confirm that I am 18 years or older</span>
+          <label class="check"><input type="radio" name="age" value="yes"><span class="box"><svg width="0" height="0"></svg></span>Yes</label>
+          <label class="check"><input type="radio" name="age" value="no"><span class="box"><svg width="0" height="0"></svg></span>No</label>
+        </div>
+        <div class="err" id="ageErr"></div>
+        <p class="foot">For more on how we collect, use, share, retain and protect your personal information, see our <a href="#">Privacy Notice</a>.</p>
+      </div>
+      <div class="dock"><button class="btn btn-primary" id="accountBtn" type="button" disabled>I understand and continue</button></div>
+    </section>
+
+    <!-- 4. Offers and updates -->
+    <section class="screen" id="s-marketing" data-tabs>
+      <div class="scroll center">
+        <svg class="art" width="150" height="128" viewBox="0 0 170 150" aria-hidden="true">
+          <path d="M40 62 L112 26 L112 118 L40 88 Z" fill="#E9EBF5" stroke="#C9CDE2" stroke-width="2"/>
+          <ellipse cx="114" cy="72" rx="20" ry="47" fill="#1E2A5A"/><ellipse cx="114" cy="72" rx="12" ry="34" fill="#F4F5FB"/>
+          <ellipse cx="118" cy="72" rx="5" ry="9" fill="#1E2A5A"/><rect x="24" y="60" width="20" height="30" rx="6" fill="#1E2A5A"/>
+          <path d="M44 86 L54 88 L58 130 a6 6 0 0 1-6 6 h-4 a5 5 0 0 1-5-5 Z" fill="#2B2F45"/>
+          <path d="M140 52 l14-8 M144 72 h16 M140 92 l14 8" stroke="#F2A900" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <h2>Stay updated on what matters to you</h2>
+        <p>Would you like personalised offers, updates and recommendations from Acme Fashions?</p>
+        <ul class="checks" id="channelList" style="max-width:260px;margin-inline:auto;text-align:left">
+          <li><label class="check"><input type="checkbox" value="calls" checked><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Calls</label></li>
+          <li><label class="check"><input type="checkbox" value="whatsapp" checked><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>WhatsApp</label></li>
+          <li><label class="check"><input type="checkbox" value="sms" checked><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>SMS</label></li>
+          <li><label class="check"><input type="checkbox" value="email" checked><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Email</label></li>
+        </ul>
+        <p class="fine">We use your phone number, email address and other account identifiers to send you personalised offers, updates and recommendations. Manage your preferences and privacy rights <a href="#">here</a>.</p>
+      </div>
+      <div class="dock">
+        <button class="btn btn-primary" id="mktYes" type="button">I understand and continue</button>
+        <button class="btn btn-ghost" id="mktNo" type="button">Not now</button>
+      </div>
+    </section>
+
+    <!-- 5. Connect experiences -->
+    <section class="screen" id="s-connect" data-tabs>
+      <div class="scroll">
+        <div class="logos" aria-hidden="true">
+          <span><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#2B2F45"/><circle cx="50" cy="50" r="40" fill="#F2A93B"/><circle cx="50" cy="50" r="14" fill="#fff"/><g stroke="#fff" stroke-width="5" stroke-linecap="round"><path d="M50 22v8M50 70v8M22 50h8M70 50h8M30 30l6 6M64 64l6 6M30 70l6-6M64 36l6-6"/></g></svg></span>
+          <span><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#2B2F45"/><circle cx="50" cy="50" r="40" fill="#6B3FD4"/><path d="M42 34 L68 50 L42 66 Z" fill="#fff"/></svg></span>
+          <span><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#2B2F45"/><circle cx="50" cy="50" r="40" fill="#2FB58A"/><path d="M44 66 V36 l22-6 v28" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><circle cx="39" cy="66" r="7" fill="#fff"/><circle cx="61" cy="58" r="7" fill="#fff"/></svg></span>
+          <span><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#2B2F45"/><circle cx="50" cy="50" r="40" fill="#3E9C3A"/><rect x="26" y="38" width="48" height="26" rx="13" fill="#fff"/><path d="M36 51h10M41 46v10" stroke="#3E9C3A" stroke-width="4" stroke-linecap="round"/><circle cx="60" cy="48" r="3" fill="#3E9C3A"/><circle cx="66" cy="54" r="3" fill="#3E9C3A"/></svg></span>
+          <span><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#2B2F45"/><circle cx="50" cy="50" r="40" fill="#D8343B"/><path d="M34 42h32l-3 26H37Z" fill="#fff"/><path d="M42 42v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#fff" stroke-width="4"/></svg></span>
+        </div>
+        <h2 class="center">Connect your ACME Group experiences</h2>
+        <p><b>You use more than one ACME Group service.</b></p>
+        <p>With your consent, we can use selected information across these services to improve your experience and make them more relevant to you.</p>
+        <ul class="checks">
+          <li class="check static"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Personalised recommendations</li>
+          <li class="check static"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Relevant offers across services</li>
+          <li class="check static"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>A more seamless experience</li>
+        </ul>
+        <p class="fine">We use your phone number, email address and other account identifiers to send you personalised offers, updates and recommendations. Manage your preferences and privacy rights <a href="#">here</a>.</p>
+      </div>
+      <div class="dock">
+        <div class="btn-row">
+          <button class="btn btn-primary" id="connYes" type="button">Yes, connect my experiences</button>
+          <button class="btn btn-ghost" id="connChoose" type="button">Choose what to connect</button>
+        </div>
+        <button class="btn btn-ghost" id="connNo" type="button">Not now</button>
+      </div>
+    </section>
+
+    <!-- 6. Choose interests -->
+    <section class="screen" id="s-interests" data-tabs data-title="Choose what to connect" data-back="s-connect">
+      <div class="scroll">
+        <div class="tiles" aria-hidden="true">
+          <div class="tile t1"><div><b>ACME Pay</b><small>Payments, savings, loans and insurance in one place.</small></div><svg width="34" height="34" viewBox="0 0 40 40"><circle cx="16" cy="22" r="11" fill="none" stroke="#fff" stroke-width="3"/><circle cx="26" cy="16" r="11" fill="none" stroke="#fff" stroke-width="3"/></svg></div>
+          <div class="tile t2"><div><b>ACME Care</b><small>Book appointments and keep your health reports together.</small></div><svg width="34" height="34" viewBox="0 0 40 40"><path d="M20 34S6 25 6 15a7 7 0 0 1 14-2 7 7 0 0 1 14 2c0 10-14 19-14 19Z" fill="none" stroke="#fff" stroke-width="3"/></svg></div>
+          <div class="tile t3"><div><b>ACME Tunes</b><small>Millions of songs across 16 languages.</small></div><svg width="34" height="34" viewBox="0 0 40 40"><path d="M15 30V10l17-4v20" fill="none" stroke="#fff" stroke-width="3"/><circle cx="11" cy="30" r="5" fill="#fff"/><circle cx="28" cy="26" r="5" fill="#fff"/></svg></div>
+          <div class="tile t4"><div><b>ACME TV</b><small>Live channels and shows in one app.</small></div><svg width="34" height="34" viewBox="0 0 40 40"><rect x="5" y="9" width="30" height="20" rx="4" fill="none" stroke="#fff" stroke-width="3"/><path d="M14 34h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></div>
+        </div>
+        <h2>Discover more from ACME Group</h2>
+        <p>We can occasionally show you relevant offers and introduce you to products and services from participating ACME Group businesses.</p>
+        <h3>What would you like to hear about?</h3>
+        <ul class="checks grid2" id="interestList">
+          <li><label class="check"><input type="checkbox" value="shopping_lifestyle"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Shopping and lifestyle</label></li>
+          <li><label class="check"><input type="checkbox" value="financial_services"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Financial services</label></li>
+          <li><label class="check"><input type="checkbox" value="entertainment"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Entertainment</label></li>
+          <li><label class="check"><input type="checkbox" value="health_wellness"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Health and wellness</label></li>
+          <li><label class="check"><input type="checkbox" value="sports_experiences"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Sports and experiences</label></li>
+          <li><label class="check"><input type="checkbox" value="education"><span class="box"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Education</label></li>
+        </ul>
+        <p class="fine">We use your phone number, email address and other account identifiers to send you personalised offers, updates and recommendations. Manage your preferences and privacy rights <a href="#">here</a>.</p>
+      </div>
+      <div class="dock"><button class="btn btn-primary" id="saveInterests" type="button">Save preferences</button></div>
+    </section>
+
+    <!-- Manage preferences: find emails by mobile, email a preference center link -->
+    <section class="screen" id="s-manage" data-title="Manage preferences" data-back="s-login">
+      <div class="scroll">
+        <h2>Find your account</h2>
+        <p class="lead">Enter the mobile number you signed up with, and we'll show the email addresses linked to it.</p>
+        <div class="field">
+          <label for="lookupMobile">Mobile number</label>
+          <div class="prefix"><span>+91</span><input class="input" id="lookupMobile" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="10-digit number"></div>
+          <div class="err"></div>
+        </div>
+        <button class="btn btn-primary" id="lookupBtn" type="button">Find email</button>
+        <div id="lookupResult" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Future Consent Portal -->
+    <section class="screen" id="s-portal" data-title="Consent portal" data-back="s-login">
+      <div class="scroll">
+<div id="consentPortal" aria-label="Future Consent Portal">
+  <div class="pv-band" aria-hidden="true"></div>
+  <div class="pv-wrap">
+    <div class="pv-head">
+      <button class="pv-back" type="button" aria-label="Back"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M14 4 7 11l7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div>
+        <div class="pv-kicker">Privacy hub</div>
+        <h1>Your data, your say</h1>
+        <p>Choose how Acme Fashions keeps in touch and how your information may be used. Nothing changes until you save.</p>
+      </div>
+    </div>
+    <div class="pv-grid">
+      <div class="pv-col">
+        <section class="pv-sec">
+          <header><span class="pv-ico"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c1-3.7 3.9-5.5 7.5-5.5s6.5 1.8 7.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><div><h2>About you</h2><p>The details we hold on file, partly hidden for your privacy.</p></div></header>
+          <div class="pv-who"><span class="pv-ini" aria-hidden="true">CP</span><div><b>Customer PII Data</b><small>Account holder</small></div></div>
+          <div class="pv-details">
+            <div class="pv-dbox"><small>Born</small><span>DD / ** / 19**</span></div>
+            <div class="pv-dbox"><small>Phone</small><span>+91 98XX XXX XXX</span></div>
+            <div class="pv-dbox"><small>Email address</small><span>c***r@example.com</span></div>
+            <div class="pv-dbox"><small>Tax ID (PAN)</small><span>ABC** ***1Z</span></div>
+          </div>
+          <div class="pv-actions"><button class="pv-link" type="button">Show more details</button><button class="pv-link" type="button">Something wrong? Ask for a correction</button></div>
+        </section>
+        <section class="pv-sec">
+          <header><span class="pv-ico"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M5 15V10a6 6 0 0 1 12 0v5l1.5 2h-15Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><div><h2>Staying in touch</h2><p>Pick the channels we may use to tell you about new features, plans and offers. Service messages about your account always reach you.</p></div></header>
+          <ul class="pv-list" data-group="reach">
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M5 15V10a6 6 0 0 1 12 0v5l1.5 2h-15Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span class="pv-what"><b>App alerts</b><small>Notices inside the Acme Fashions app</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="App alerts" data-key="ch_app"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="5" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m3 6 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></span><span class="pv-what"><b>Email</b><small>Newsletters and offers to your inbox</small></span><button class="pv-switch" type="button" role="switch" aria-checked="true" aria-label="Email" data-key="ch_email"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M5 3h3l2 5-2.5 1.5a11 11 0 0 0 5 5L14 12l5 2v3a2 2 0 0 1-2 2A15 15 0 0 1 3 5a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="pv-what"><b>Phone calls</b><small>Occasional calls from our team</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="Phone calls" data-key="ch_call"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M11 3a8 8 0 0 0-7 12l-1 4 4-1a8 8 0 1 0 4-15Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="pv-what"><b>WhatsApp</b><small>Updates on WhatsApp</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="WhatsApp" data-key="ch_whatsapp"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="4" width="16" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7 8h8M7 11h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span class="pv-what"><b>Text messages</b><small>Short updates by SMS</small></span><button class="pv-switch" type="button" role="switch" aria-checked="true" aria-label="Text messages" data-key="ch_sms"></button></li>
+          </ul>
+        </section>
+      </div>
+      <div class="pv-col">
+        <section class="pv-sec">
+          <header><span class="pv-ico"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M11 2 13.5 8H20l-5.2 3.8 2 6.2L11 14.2 5.2 18l2-6.2L2 8h6.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><div><h2>Offer checks</h2><p>Let us check which offers from Acme Fashions and our partner brands suit you. We only look at the areas you switch on.</p></div></header>
+          <ul class="pv-list" data-group="offers">
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M11 9v11M7 20h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="11" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6.5 3.5a6.5 6.5 0 0 0 0 7M15.5 3.5a6.5 6.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span class="pv-what"><b>Mobile and internet</b><small>Recharge plans, broadband and device upgrades</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="Mobile and internet" data-key="of_telecom"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 7h14l-1 12H5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 7V6a3 3 0 0 1 6 0v1" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></span><span class="pv-what"><b>Shopping and lifestyle</b><small>Fashion, electronics and home deals</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="Shopping and lifestyle" data-key="of_shopping"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m9 8 5 2.5L9 13Z" fill="currentColor"/></svg></span><span class="pv-what"><b>Entertainment and streaming</b><small>Music, video and gaming subscriptions</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="Entertainment and streaming" data-key="of_entertainment"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 6h14a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 6l11-3v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="15" cy="12" r="1.3" fill="currentColor"/></svg></span><span class="pv-what"><b>Payments and rewards</b><small>Wallets, cashback and loyalty points</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="Payments and rewards" data-key="of_payments"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M2 12 20 4l-5 15-4-6Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m11 13 9-9" stroke="currentColor" stroke-width="1.7"/></svg></span><span class="pv-what"><b>Travel and experiences</b><small>Trips, events and dining</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="Travel and experiences" data-key="of_travel"></button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M11 19S3 14 3 8.5a4 4 0 0 1 8-1 4 4 0 0 1 8 1C19 14 11 19 11 19Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="pv-what"><b>Health and wellness</b><small>Fitness, care and insurance plans</small></span><button class="pv-switch" type="button" role="switch" aria-checked="false" aria-label="Health and wellness" data-key="of_health"></button></li>
+          </ul>
+        </section>
+        <section class="pv-sec">
+          <header><span class="pv-ico"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="12" y="11" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 7h4a2 2 0 0 1 2 2v2M12 15H8a2 2 0 0 1-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span><div><h2>Linked platforms</h2><p>Outside services you've allowed to share information with us. Unlink one at any time.</p></div></header>
+          <ul class="pv-list" data-group="platforms">
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M8 12a4 4 0 0 0 6 .5l3-3a4 4 0 0 0-5.6-5.7L10 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 10a4 4 0 0 0-6-.5l-3 3a4 4 0 0 0 5.6 5.7L12 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="pv-what"><b>DigiLocker</b><small>Government document wallet · <span class="pv-status">Not linked</span></small></span><button class="pv-mini" type="button" data-plat="digilocker" data-linked="false">Link</button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M8 12a4 4 0 0 0 6 .5l3-3a4 4 0 0 0-5.6-5.7L10 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 10a4 4 0 0 0-6-.5l-3 3a4 4 0 0 0 5.6 5.7L12 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="pv-what"><b>Aggregator1</b><small>Financial data sharing · <span class="pv-status on">Linked</span></small></span><button class="pv-mini" type="button" data-plat="aggregator1" data-linked="true">Unlink</button></li>
+<li class="pv-row"><span class="pv-ri"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M8 12a4 4 0 0 0 6 .5l3-3a4 4 0 0 0-5.6-5.7L10 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 10a4 4 0 0 0-6-.5l-3 3a4 4 0 0 0 5.6 5.7L12 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="pv-what"><b>Aggregator2<span class="pv-new">New</span></b><small>Financial data sharing · <span class="pv-status on">Linked</span></small></span><button class="pv-mini" type="button" data-plat="aggregator2" data-linked="true">Unlink</button></li>
+          </ul>
+        </section>
+      </div>
+      <aside class="pv-col pv-side" aria-label="Help and rights">
+        <div class="pv-hcard lead">
+          <svg width="46" height="50" viewBox="0 0 52 56" aria-hidden="true"><path d="M26 3 6 10v14c0 14 9 24 20 29 11-5 20-15 20-29V10Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M21 22a5 5 0 1 1 7 4.6c-1.3.6-2 1.6-2 3V31" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="26" cy="37" r="2" fill="currentColor"/></svg>
+          <p>How do we safeguard your data?</p>
+          <h3>With the Digital Personal Data Protection Act (DPDPA)</h3>
+          <p class="pv-tag">#SafeguardYourData</p>
+          <button class="pv-hbtn" type="button">Know DPDPA FAQs</button>
+        </div>
+        <div class="pv-hcard">
+          <svg width="42" height="46" viewBox="0 0 48 52" aria-hidden="true"><path d="M6 4h36v32H26l-8 10v-10H6Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M24 12v12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="30" r="2" fill="currentColor"/></svg>
+          <p>Have any issues</p>
+          <h3>about your consents?</h3>
+          <button class="pv-hbtn" type="button">Click for support</button>
+        </div>
+        <div class="pv-hcard">
+          <svg width="42" height="46" viewBox="0 0 48 52" aria-hidden="true"><path d="M24 3 6 10v13c0 13 8 22 18 26 10-4 18-13 18-26V10Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="m16 26 6 6 10-12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Know your Rights</h3>
+          <p class="pv-tag">#KnowYourRights</p>
+          <button class="pv-hbtn" type="button">See your rights</button>
+        </div>
+      </aside>
+    </div>
+    <div class="pv-save">
+      <span class="pv-msg" aria-live="polite">Nothing changes until you save.</span>
+      <button class="pv-btn ghost" type="button" data-act="undo">Undo changes</button>
+      <button class="pv-btn" type="button" data-act="save">Save my choices</button>
+    </div>
+  </div>
+</div>
+      </div>
+    </section>
+
+    <!-- 7. Result -->
+    <section class="screen" id="s-done" data-tabs>
+      <div class="scroll center" id="result"></div>
+      <div class="dock" id="doneDock" hidden></div>
+    </section>
+  </main>
+
+  <nav class="tabbar" id="tabbar" aria-label="App sections" hidden>
+    <button class="tab on" type="button" tabindex="-1"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 10 11 3l8 7v9H13v-6H9v6H3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</button>
+    <button class="tab" type="button" tabindex="-1"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="12" y="3" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="12" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="12" y="12" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>Categories</button>
+    <button class="tab" type="button" tabindex="-1"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M5 8h12l-1 11H6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>Bag</button>
+    <button class="tab" type="button" tabindex="-1"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="7.5" r="3.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 19c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Account</button>
+  </nav>
+</div>
+
+<script>
+/* ===================== CONFIG =====================
+   SHEETS_URL: your Google Apps Script web app URL for the Acme Fashions sheet (ends in /exec).
+   Leave it empty to run in demo mode (records are kept in this browser only). */
+const CONFIG = {
+  SHEETS_URL: "https://script.google.com/macros/s/AKfycbwhDa2zxKjWonIjasB6qfxD0pqOw4V-sLzX2BGdSXfuTpA_H0qLfUEFitHtIb5nhw0pug/exec?key=c36aa8ab1e174850b39e5c1c93b65eef",
+  NOTICE_VERSION: "acme-2026-10-v1"
+};
+/* ================================================== */
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const now = () => new Date().toISOString();
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const maskMobile = m => `+91 ${m.slice(0, 2)}XXXXXX${m.slice(-2)}`;
+const tick = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const LABELS = {
+  privacy_notice: "Privacy notice", marketing: "Offers and updates", cross_service: "Connect services", interest: "Interests",
+  service_processing: "Account and orders", calls: "Calls", whatsapp: "WhatsApp", sms: "SMS", email: "Email",
+  data_linking: "Use information across services",
+  shopping_lifestyle: "Shopping and lifestyle", entertainment: "Entertainment", sports_experiences: "Sports and experiences",
+  financial_services: "Financial services", health_wellness: "Health and wellness", education: "Education"
+};
+const INTERESTS = ["shopping_lifestyle","entertainment","sports_experiences","financial_services","health_wellness","education"];
+
+let J, lastPayload, history = [];
+
+function resetJourney() { J = { startedAt: now(), applicant: {}, consents: [], events: [] }; }
+function log(step, action) { J.events.push({ step, action, at: now() }); }
+function setConsent(purpose, item, status) {
+  const rec = { purpose, item, status, capturedAt: now() };
+  const i = J.consents.findIndex(c => c.purpose === purpose && c.item === item);
+  if (i >= 0) J.consents[i] = rec; else J.consents.push(rec);
+}
+
+/* ---------- Navigation ---------- */
+function show(id, goingBack) {
+  const target = $("#" + id);
+  $$(".screen").forEach(s => s.classList.remove("active", "back"));
+  if (goingBack) target.classList.add("back");
+  target.classList.add("active");
+  const title = target.dataset.title;
+  $("#barBrand").hidden = !!title;
+  $("#barTitle").hidden = !title;
+  $("#barTitle").textContent = title || "";
+  $("#backBtn").hidden = !target.dataset.back;
+  $("#managePrefsBtn").hidden = id === "s-manage";
+  $("#portalBtn").hidden = id === "s-portal";
+  $("#app").classList.toggle("titled", !!title);
+  const tabs = target.hasAttribute("data-tabs");
+  $("#tabbar").hidden = !tabs;
+  $("#app").classList.toggle("has-tabs", tabs);
+  const sc = $(".scroll", target); if (sc) sc.scrollTop = 0;
+  const h = $("h1, h2", target);
+  if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+  log(id.replace("s-", ""), "viewed");
+}
+$("#backBtn").addEventListener("click", () => {
+  const cur = $(".screen.active");
+  if (cur && cur.dataset.back) show(cur.dataset.back, true);
+});
+
+function fieldError(input, msg) {
+  const f = input.closest(".field");
+  f.classList.toggle("invalid", !!msg);
+  f.querySelector(".err").textContent = msg || "";
+  input.setAttribute("aria-invalid", msg ? "true" : "false");
+  return !msg;
+}
+function digitsOnly(input, max) {
+  input.addEventListener("input", () => { input.value = input.value.replace(/\D/g, "").slice(0, max); fieldError(input, ""); });
+}
+function onEnter(input, btn) { input.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); }); }
+
+/* ---------- 1. Mobile ---------- */
+const mobile = $("#mobile"), otp = $("#otp");
+digitsOnly(mobile, 10); digitsOnly(otp, 6);
+onEnter(mobile, $("#continueBtn")); onEnter(otp, $("#otpBtn"));
+
+let resendTimer;
+function startResendTimer() {
+  clearInterval(resendTimer);
+  let s = 59;
+  $("#resendSecs").textContent = s; $("#resendWait").hidden = false; $("#resendBtn").hidden = true;
+  resendTimer = setInterval(() => {
+    s -= 1; $("#resendSecs").textContent = s;
+    if (s <= 0) { clearInterval(resendTimer); $("#resendWait").hidden = true; $("#resendBtn").hidden = false; }
+  }, 1000);
+}
+$("#resendBtn").addEventListener("click", () => { log("otp", "code_resent"); startResendTimer(); });
+
+$("#continueBtn").addEventListener("click", () => {
+  if (!fieldError(mobile, /^[6-9]\d{9}$/.test(mobile.value) ? "" : "Enter a 10-digit mobile number starting with 6, 7, 8 or 9.")) return;
+  J.applicant.mobile = mobile.value;
+  log("login", "code_requested");
+  $("#otpTo").textContent = maskMobile(mobile.value);
+  otp.value = ""; fieldError(otp, "");
+  startResendTimer();
+  show("s-otp");
+  otp.focus();
+});
+
+/* ---------- 2. OTP ---------- */
+$("#otpBtn").addEventListener("click", () => {
+  if (!fieldError(otp, /^\d{6}$/.test(otp.value) ? "" : "Enter the 6-digit OTP.")) return;
+  J.applicant.otpVerified = true;
+  clearInterval(resendTimer);
+  log("otp", "code_verified");
+  $("#acctMobile").textContent = "+91 " + J.applicant.mobile;
+  show("s-account");
+});
+
+/* ---------- 3. Account + notice ---------- */
+const email = $("#email"), firstName = $("#firstName"), lastName = $("#lastName");
+[email, firstName, lastName].forEach(i => i.addEventListener("input", () => fieldError(i, "")));
+$("#editMobile").addEventListener("click", () => { J.applicant.otpVerified = false; show("s-login", true); mobile.focus(); });
+$$('input[name="age"]').forEach(r => r.addEventListener("change", () => {
+  const yes = r.value === "yes";
+  $("#accountBtn").disabled = !yes;
+  $("#ageErr").textContent = yes ? "" : "You need to be 18 or older to create an account.";
+  log("account", "age_" + r.value);
+}));
+
+$("#accountBtn").addEventListener("click", () => {
+  const nameRe = /^[A-Za-z][A-Za-z .'-]{0,49}$/;
+  const ok = [
+    fieldError(email, /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim()) ? "" : "Enter an email address like name@example.com."),
+    fieldError(firstName, nameRe.test(firstName.value.trim()) ? "" : "Enter your first name using letters only."),
+    fieldError(lastName, nameRe.test(lastName.value.trim()) ? "" : "Enter your last name using letters only.")
+  ].every(Boolean);
+  if (!ok) {
+    const firstBad = $("#s-account .invalid .input");
+    if (firstBad) firstBad.focus();
+    return;
+  }
+  Object.assign(J.applicant, {
+    email: email.value.trim(), firstName: firstName.value.trim(), lastName: lastName.value.trim(),
+    ageConfirmed: true
+  });
+  setConsent("privacy_notice", "service_processing", "granted");
+  log("account", "completed");
+  show("s-marketing");
+});
+
+/* ---------- 4. Offers and updates ---------- */
+$("#mktYes").addEventListener("click", () => {
+  const boxes = $$("#channelList input");
+  boxes.forEach(b => setConsent("marketing", b.value, b.checked ? "granted" : "declined"));
+  if (boxes.some(b => b.checked)) show("s-connect"); else submit("marketing_declined");
+});
+$("#mktNo").addEventListener("click", () => {
+  $$("#channelList input").forEach(b => setConsent("marketing", b.value, "declined"));
+  submit("marketing_declined");
+});
+
+/* ---------- 5. Connect ---------- */
+$("#connYes").addEventListener("click", () => {
+  setConsent("cross_service", "data_linking", "granted");
+  INTERESTS.forEach(i => setConsent("interest", i, "granted"));
+  submit("completed");
+});
+$("#connNo").addEventListener("click", () => {
+  setConsent("cross_service", "data_linking", "declined");
+  submit("cross_service_declined");
+});
+$("#connChoose").addEventListener("click", () => show("s-interests"));
+
+/* ---------- 6. Interests ---------- */
+$("#saveInterests").addEventListener("click", () => {
+  const boxes = $$("#interestList input");
+  const any = boxes.some(b => b.checked);
+  setConsent("cross_service", "data_linking", any ? "granted" : "declined");
+  boxes.forEach(b => setConsent("interest", b.value, b.checked ? "granted" : "declined"));
+  submit(any ? "completed" : "cross_service_declined");
+});
+
+/* ---------- Submit ---------- */
+async function submit(outcome) {
+  log("journey", "submitted");
+  lastPayload = {
+    noticeVersion: CONFIG.NOTICE_VERSION, outcome, startedAt: J.startedAt, submittedAt: now(),
+    applicant: { ...J.applicant }, consents: J.consents.map(c => ({ ...c })), events: J.events.map(e => ({ ...e })),
+    client: { userAgent: navigator.userAgent }
+  };
+  show("s-done");
+  await send(lastPayload);
+}
+
+async function send(payload) {
+  $("#doneDock").hidden = true;
+  $("#result").innerHTML = '<div class="spinner" role="status" aria-label="Saving"></div><h2>Saving your choices</h2>';
+
+  if (!CONFIG.SHEETS_URL) {
+    const ref = "DEMO-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+    const safe = { referenceId: ref, ...payload };
+    try {
+      const list = JSON.parse(localStorage.getItem("acme_demo_submissions") || "[]");
+      list.push(safe); localStorage.setItem("acme_demo_submissions", JSON.stringify(list));
+    } catch (e) { /* storage unavailable; the record is still shown */ }
+    renderSuccess(ref, payload, safe);
+    return;
+  }
+  try {
+    const res = await fetch(CONFIG.SHEETS_URL.trim(), {
+      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload), redirect: "follow"
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || `The server returned status ${res.status}.`);
+    renderSuccess(data.referenceId, payload, null, data.securiti);
+  } catch (err) {
+    renderError(err.message === "Failed to fetch"
+      ? "The Google Sheet couldn't be reached. Check that SHEETS_URL ends in /exec and the web app is shared with Anyone, then try again."
+      : err.message);
+  }
+}
+
+function renderSuccess(ref, payload, demoRecord, securiti) {
+  const msg = {
+    completed: "Your account is ready and your choices are saved.",
+    marketing_declined: "Your account is ready. You won't get personalised offers or updates.",
+    cross_service_declined: "Your account is ready. We won't use your information across other ACME Group services."
+  }[payload.outcome];
+  const syncText = { sent: "Consents sent to Securiti.", failed: "Saved. The Securiti upload failed and will be retried.", not_configured: "Saved. Securiti upload isn't set up yet." }[securiti];
+  const groups = {};
+  payload.consents.forEach(c => (groups[c.purpose] = groups[c.purpose] || []).push(c));
+  const rows = Object.entries(groups).map(([p, list]) =>
+    `<tr><th scope="row">${esc(LABELS[p] || p)}</th><td>${list.map(c => `<span class="pill ${c.status}">${esc(LABELS[c.item] || c.item)}: ${c.status}</span>`).join("")}</td></tr>`).join("");
+
+  $("#result").innerHTML = `
+    <div class="done-mark">${tick.replace('width="14" height="14"', 'width="32" height="32"')}</div>
+    <h2 tabindex="-1">Welcome, ${esc(payload.applicant.firstName)}</h2>
+    <p>${esc(msg)}</p>
+    <div class="ref">${esc(ref || "")}</div>
+    <table class="summary">
+      <tr><th scope="row">Mobile</th><td>${esc(maskMobile(payload.applicant.mobile))}</td></tr>
+      <tr><th scope="row">Email</th><td>${esc(payload.applicant.email)}</td></tr>
+      ${rows}
+      ${syncText ? `<tr><th scope="row">Securiti</th><td>${esc(syncText)}</td></tr>` : ""}
+    </table>
+    ${demoRecord ? `<p class="demo-note">Demo mode: no Google Sheets URL is set, so this record was saved in this browser only. Set <code>CONFIG.SHEETS_URL</code> in index.html to send records to your sheet.</p>
+      <details><summary>View the record that would be sent</summary><pre>${esc(JSON.stringify(demoRecord, null, 2))}</pre></details>` : ""}`;
+  $("#doneDock").innerHTML = '<button class="btn btn-primary" type="button" id="restart">Start a new sign-up</button>';
+  $("#doneDock").hidden = false;
+  $("#restart").addEventListener("click", restart);
+  $("#result h2").focus();
+}
+
+function renderError(message) {
+  $("#result").innerHTML = `
+    <div class="done-mark fail"><svg width="28" height="28" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+    <h2 tabindex="-1">Your choices weren't saved</h2>
+    <p>${esc(message)}</p>`;
+  $("#doneDock").innerHTML = '<button class="btn btn-primary" type="button" id="retry">Try again</button><button class="btn btn-ghost" type="button" id="restart">Start over</button>';
+  $("#doneDock").hidden = false;
+  $("#retry").addEventListener("click", () => send(lastPayload));
+  $("#restart").addEventListener("click", restart);
+  $("#result h2").focus();
+}
+
+function restart() {
+  resetJourney();
+  $$(".input").forEach(i => { i.value = ""; fieldError(i, ""); });
+  $$('input[name="age"]').forEach(r => r.checked = false);
+  $("#accountBtn").disabled = true; $("#ageErr").textContent = "";
+  $$("#channelList input").forEach(b => b.checked = true);
+  $$("#interestList input").forEach(b => b.checked = false);
+  show("s-login", true);
+}
+
+/* ---------- Manage preferences ---------- */
+const lookupMobile = $("#lookupMobile");
+digitsOnly(lookupMobile, 10);
+onEnter(lookupMobile, $("#lookupBtn"));
+let lookedUpMobile = "";
+
+$("#managePrefsBtn2").addEventListener("click", () => $("#managePrefsBtn").click());
+$("#portalLink").addEventListener("click", () => $("#portalBtn").click());
+$("#managePrefsBtn").addEventListener("click", () => {
+  const cur = $(".screen.active");
+  if (cur && cur.id === "s-manage") return;
+  $("#s-manage").dataset.back = cur ? cur.id : "s-login";
+  lookupMobile.value = ""; fieldError(lookupMobile, "");
+  $("#lookupResult").innerHTML = "";
+  show("s-manage");
+  lookupMobile.focus();
+});
+
+async function callSheet(body) {
+  const res = await fetch(CONFIG.SHEETS_URL.trim(), {
+    method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(body), redirect: "follow"
+  }).catch(() => { throw new Error("The Google Sheet couldn't be reached. Try again in a moment."); });
+  const data = await res.json().catch(() => ({}));
+  if (!data.ok) throw new Error(data.error || "Something went wrong. Try again in a moment.");
+  return data;
+}
+
+$("#lookupBtn").addEventListener("click", async () => {
+  if (!fieldError(lookupMobile, /^[6-9]\d{9}$/.test(lookupMobile.value) ? "" : "Enter a 10-digit mobile number starting with 6, 7, 8 or 9.")) return;
+  const btn = $("#lookupBtn"), out = $("#lookupResult");
+  btn.disabled = true; btn.textContent = "Searching…"; out.innerHTML = "";
+  try {
+    let emails;
+    if (!CONFIG.SHEETS_URL) {
+      let list = [];
+      try { list = JSON.parse(localStorage.getItem("acme_demo_submissions") || "[]"); } catch (e) {}
+      emails = [...new Set(list.filter(r => r.applicant && r.applicant.mobile === lookupMobile.value).map(r => r.applicant.email))];
+    } else {
+      emails = (await callSheet({ action: "lookup_emails", mobile: lookupMobile.value })).emails || [];
+    }
+    lookedUpMobile = lookupMobile.value;
+    if (!emails.length) {
+      out.innerHTML = `<p class="pc-card">We couldn't find an account for ${esc(maskMobile(lookedUpMobile))}. Check the number, or sign up first.</p>`;
+      return;
+    }
+    out.innerHTML = `
+      <div class="pc-card">
+        <p>${emails.length === 1 ? "This email is" : `These ${emails.length} emails are`} linked to ${esc(maskMobile(lookedUpMobile))}. Choose one and we'll email it a link to your preference center.</p>
+        <div class="field">
+          <label for="emailSelect">Email</label>
+          <select class="input" id="emailSelect">${emails.map((e, i) => `<option value="${i}">${esc(e)}</option>`).join("")}</select>
+        </div>
+        <button class="btn btn-primary" id="sendLinkBtn" type="button">Email me a link</button>
+        <p class="hint">We'll email a secure link to your preference center, where you can change your choices.</p>
+        <div id="linkResult" aria-live="polite"></div>
+      </div>`;
+    $("#sendLinkBtn").addEventListener("click", sendPreferenceLink);
+  } catch (err) {
+    out.innerHTML = `<p class="err">${esc(err.message)}</p>`;
+  } finally {
+    btn.disabled = false; btn.textContent = "Find email";
+  }
+});
+
+async function sendPreferenceLink() {
+  const btn = $("#sendLinkBtn"), out = $("#linkResult"), sel = $("#emailSelect");
+  if (!CONFIG.SHEETS_URL) {
+    out.innerHTML = `<p class="err">Demo mode: set CONFIG.SHEETS_URL to send preference center links.</p>`;
+    return;
+  }
+  btn.disabled = true; btn.textContent = "Sending…"; out.innerHTML = "";
+  try {
+    const data = await callSheet({ action: "send_pc_link", mobile: lookedUpMobile, index: Number(sel.value) });
+    out.innerHTML = `<div class="notice-ok"><b>Check your inbox.</b> We've emailed a link to ${esc(data.email)}. Open it to manage your preferences. It can take a few minutes to arrive.</div>`;
+  } catch (err) {
+    out.innerHTML = `<p class="err">${esc(err.message)}</p>`;
+  } finally {
+    btn.disabled = false; btn.textContent = "Email me a link";
+  }
+}
+
+resetJourney();
+log("login", "viewed");
+
+/* ---------- Future Consent Portal (self-contained; demo: choices stay on this page) ---------- */
+(function () {
+  const root = document.getElementById("consentPortal");
+  if (!root) return;
+  const q = s => root.querySelector(s), qa = s => Array.from(root.querySelectorAll(s));
+  const msg = q(".pv-msg");
+  let saved = null;
+  const state = () => ({ sw: qa(".pv-switch").map(b => b.getAttribute("aria-checked")), pf: qa(".pv-mini").map(b => b.dataset.linked) });
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  function setPlat(b, linked) {
+    b.dataset.linked = String(linked);
+    b.textContent = linked ? "Unlink" : "Link";
+    const name = b.closest(".pv-row").querySelector("b").firstChild.textContent;
+    b.setAttribute("aria-label", `${linked ? "Unlink" : "Link"} ${name}`);
+    const st = b.closest(".pv-row").querySelector(".pv-status");
+    st.textContent = linked ? "Linked" : "Not linked"; st.classList.toggle("on", linked);
+  }
+  const counts = () => ({
+    ch: qa('[data-group="reach"] .pv-switch[aria-checked="true"]').length,
+    of: qa('[data-group="offers"] .pv-switch[aria-checked="true"]').length,
+    pf: qa('.pv-mini[data-linked="true"]').length
+  });
+  const changed = () => { msg.textContent = "You have unsaved changes."; };
+  qa(".pv-switch").forEach(b => b.addEventListener("click", () => {
+    b.setAttribute("aria-checked", b.getAttribute("aria-checked") === "true" ? "false" : "true"); changed();
+  }));
+  qa(".pv-mini").forEach(b => { setPlat(b, b.dataset.linked === "true"); b.addEventListener("click", () => { setPlat(b, b.dataset.linked !== "true"); changed(); }); });
+  q('[data-act="save"]').addEventListener("click", () => {
+    saved = state(); const n = counts();
+    msg.textContent = `Saved for this demo: ${plural(n.ch, "channel", "channels")}, ${plural(n.of, "offer check", "offer checks")}, ${plural(n.pf, "platform", "platforms")} linked.`;
+  });
+  q('[data-act="undo"]').addEventListener("click", () => {
+    if (!saved) return;
+    qa(".pv-switch").forEach((b, i) => b.setAttribute("aria-checked", saved.sw[i]));
+    qa(".pv-mini").forEach((b, i) => setPlat(b, saved.pf[i] === "true"));
+    msg.textContent = "Changes undone.";
+  });
+  window.ConsentPortal = {
+    onBack: null,
+    prepare() { if (!saved) saved = state(); },
+    focus() { const h = q("h1"); h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+  };
+  q(".pv-back").addEventListener("click", () => { if (window.ConsentPortal.onBack) window.ConsentPortal.onBack(); });
+})();
+
+$("#portalBtn").addEventListener("click", () => {
+  const cur = $(".screen.active");
+  if (cur && cur.id === "s-portal") return;
+  $("#s-portal").dataset.back = cur ? cur.id : "s-login";
+  ConsentPortal.prepare();
+  show("s-portal");
+});
+</script>
+</body>
+</html>
